@@ -77,6 +77,8 @@ class FunSetSuite extends FunSuite {
     val s1 = singletonSet(1)
     val s2 = singletonSet(2)
     val s3 = singletonSet(3)
+    val s4 = (x: Int) => 1 <= x && 10 >= x
+    val s5 = (x: Int) => 7 <= x && 18 >= x
   }
 
   /**
@@ -86,7 +88,7 @@ class FunSetSuite extends FunSuite {
    * Once you finish your implementation of "singletonSet", exchange the
    * function "ignore" by "test".
    */
-  ignore("singletonSet(1) contains 1") {
+  test("singletonSet(1) contains 1") {
     
     /**
      * We create a new instance of the "TestSets" trait, this gives us access
@@ -101,7 +103,38 @@ class FunSetSuite extends FunSuite {
     }
   }
 
-  ignore("union contains all elements") {
+  test("funset test1") {
+    new TestSets {
+      val squaredFilteredSet = map(filter(union(s4, s5), x=> x % 2 == 0), x => x * x)
+      assert(forall(squaredFilteredSet, x => x % 4 == 0))
+    }
+  }
+
+  test("funset test2") {
+    new TestSets {
+      val emptySet = intersect(s4, singletonSet(100))
+      assert(!exists(emptySet, x => true))
+    }
+  }
+
+  test("funset test3") {
+   new TestSets {
+     val unionDiffIntersect = diff(union(s4, s5), intersect(s4, s5))
+     assert(!exists(unionDiffIntersect, x => 7 <= x && 10 >= x), "funset 3-1")
+     assert(contains(unionDiffIntersect, 3), "funset 3-2")
+     assert(!contains(unionDiffIntersect, 8), "funset 3-3")
+   }
+  }
+
+  test("funset test4") {
+    new TestSets {
+      val mappedSet1 = map(intersect(s4, s5), x => 2 * x + 1)
+      val mappedSet2 = map(intersect(s4, s5), x => - x + 25)
+      assert(contains(intersect(mappedSet1, mappedSet2), 17))
+    }
+  }
+
+  test("union contains all elements") {
     new TestSets {
       val s = union(s1, s2)
       assert(contains(s, 1), "Union 1")
@@ -109,4 +142,57 @@ class FunSetSuite extends FunSuite {
       assert(!contains(s, 3), "Union 3")
     }
   }
+
+  test("intersection test") {
+    new TestSets {
+      val s = intersect(s4, s5)
+      assert(contains(s, 8), "Intersection 1")
+      assert(contains(s, 10), "Intersection 2")
+      assert(!contains(s, 14), "Intersection 3")
+    }
+  }
+
+  test("diff test") {
+    new TestSets {
+      val s = diff(s4, s5)
+      assert(contains(s, 3), "Difference 1")
+      assert(contains(s, 5), "Difference 2")
+      assert(!contains(s, 8), "Difference 3")
+    }
+  }
+
+  test("filter test") {
+    new TestSets {
+      val s = filter(s4, x => x % 2 == 0)
+      assert(contains(s, 4), "Filter 1")
+      assert(contains(s, 10), "Filter 2")
+      assert(!contains(s, 3), "Filter 3")
+    }
+  }
+
+  test("forall test") {
+    assert(forall(x => x >= 200 && x <= 300, x => x < 400 ), "forall 1")
+    assert(!forall(x => x >= 200 && x <= 300, x => x > 200 ), "forall 2")
+    assert(forall(x => x >= -900 && x <= 900, x => x < 2000 ), "forall 3")
+    new TestSets {
+      assert(forall(union(s4, s5), x => x <= 20 ), "forall 4")
+    }
+  }
+
+  test("exists test") {
+    assert(!exists(x => x % 2 == 0, x => x % 2 == 1 ), "exists 1")
+    new TestSets {
+      assert(exists(intersect(s4, s5), x => x % 4 == 0 ), "exists 2")
+    }
+  }
+
+  test("map test") {
+    new TestSets {
+      val doubledSet: Set = map(intersect(s4, s5), x => x * 2)
+      assert(contains(doubledSet, 20), "map 1")
+      assert(contains(doubledSet, 14), "map 2")
+      assert(!contains(doubledSet, 8), "map 3")
+    }
+  }
+
 }
